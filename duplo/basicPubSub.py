@@ -20,8 +20,6 @@ import logging
 import time
 import argparse
 
-# AWSIoTMQTTClient
-g_AWSIoTMQTTClient = None    
 
 # Custom MQTT message callback
 def customCallback(client, userdata, message):
@@ -32,7 +30,7 @@ def customCallback(client, userdata, message):
     print("--------------\n\n")
 
 
-def pubSubValidateArg():
+def pubSubGetClient():
 
     # Read in command-line parameters
     parser = argparse.ArgumentParser()
@@ -70,32 +68,35 @@ def pubSubValidateArg():
     formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     streamHandler.setFormatter(formatter)
     logger.addHandler(streamHandler)
+    
+    lAWSIoTMQTTClient = None  
 
     if useWebsocket:
-        g_AWSIoTMQTTClient = AWSIoTMQTTClient(clientId, useWebsocket=True)
-        g_AWSIoTMQTTClient.configureEndpoint(host, 443)
-        g_AWSIoTMQTTClient.configureCredentials(rootCAPath)
+        lAWSIoTMQTTClient = AWSIoTMQTTClient(clientId, useWebsocket=True)
+        lAWSIoTMQTTClient.configureEndpoint(host, 443)
+        lAWSIoTMQTTClient.configureCredentials(rootCAPath)
     else:
-        g_AWSIoTMQTTClient = AWSIoTMQTTClient(clientId)
-        g_AWSIoTMQTTClient.configureEndpoint(host, 8883)
-        g_AWSIoTMQTTClient.configureCredentials(rootCAPath, privateKeyPath, certificatePath)
+        lAWSIoTMQTTClient = AWSIoTMQTTClient(clientId)
+        lAWSIoTMQTTClient.configureEndpoint(host, 8883)
+        lAWSIoTMQTTClient.configureCredentials(rootCAPath, privateKeyPath, certificatePath)
 
     # AWSIoTMQTTClient connection configuration
-    g_AWSIoTMQTTClient.configureAutoReconnectBackoffTime(1, 32, 20)
-    g_AWSIoTMQTTClient.configureOfflinePublishQueueing(-1)  # Infinite offline Publish queueing
-    g_AWSIoTMQTTClient.configureDrainingFrequency(2)  # Draining: 2 Hz
-    g_AWSIoTMQTTClient.configureConnectDisconnectTimeout(10)  # 10 sec
-    g_AWSIoTMQTTClient.configureMQTTOperationTimeout(5)  # 5 sec
+    lAWSIoTMQTTClient.configureAutoReconnectBackoffTime(1, 32, 20)
+    lAWSIoTMQTTClient.configureOfflinePublishQueueing(-1)  # Infinite offline Publish queueing
+    lAWSIoTMQTTClient.configureDrainingFrequency(2)  # Draining: 2 Hz
+    lAWSIoTMQTTClient.configureConnectDisconnectTimeout(10)  # 10 sec
+    lAWSIoTMQTTClient.configureMQTTOperationTimeout(5)  # 5 sec
+    return lAWSIoTMQTTClient, topic  
 
-def startPubSub():
+def startPubSub(aInAWSIoTMQTTClient, aInTopic):
     # Connect and subscribe to AWS IoT
-    g_AWSIoTMQTTClient.connect()
-    g_AWSIoTMQTTClient.subscribe(topic, 1, customCallback)
+    aInAWSIoTMQTTClient.connect()
+    aInAWSIoTMQTTClient.subscribe(aInTopic, 1, customCallback)
     time.sleep(2)
 
     # Publish to the same topic in a loop forever
     loopCount = 0
     while True:
-        g_AWSIoTMQTTClient.publish(topic, "New Message " + str(loopCount), 1)
+        aInAWSIoTMQTTClient.publish(aInTopic, "New Message " + str(loopCount), 1)
         loopCount += 1
         time.sleep(1)
