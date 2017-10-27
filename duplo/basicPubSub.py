@@ -43,7 +43,8 @@ def pubSubGetClient():
     parser.add_argument("-id", "--clientId", action="store", dest="clientId", default="basicPubSub",
                         help="Targeted client id")
     parser.add_argument("-t", "--topic", action="store", dest="topic", default="sdk/test/Python", help="Targeted topic")
-
+    parser.add_argument("-d", "--deviceid", action="store", required=True, dest="deviceid", help="device id in duplocloud")
+    
     args = parser.parse_args()
     host = args.host
     rootCAPath = args.rootCAPath
@@ -52,6 +53,7 @@ def pubSubGetClient():
     useWebsocket = args.useWebsocket
     clientId = args.clientId
     topic = args.topic
+    deviceid = args.deviceid
 
     if args.useWebsocket and args.certificatePath and args.privateKeyPath:
         parser.error("X.509 cert authentication and WebSocket are mutual exclusive. Please pick one.")
@@ -86,13 +88,13 @@ def pubSubGetClient():
     lAWSIoTMQTTClient.configureDrainingFrequency(2)  # Draining: 2 Hz
     lAWSIoTMQTTClient.configureConnectDisconnectTimeout(10)  # 10 sec
     lAWSIoTMQTTClient.configureMQTTOperationTimeout(5)  # 5 sec
-    return lAWSIoTMQTTClient, topic  
+    return lAWSIoTMQTTClient, topic, deviceid
 
 def startPubSub(aInAWSIoTMQTTClient, aInTopic):
     # Connect and subscribe to AWS IoT
     aInAWSIoTMQTTClient.connect()
-    aInAWSIoTMQTTClient.subscribe(aInTopic, 1, customCallback)
-    time.sleep(2)
+    #aInAWSIoTMQTTClient.subscribe(aInTopic, 1, customCallback)
+    time.sleep(10)
 
     # Publish to the same topic in a loop forever
     loopCount = 0
