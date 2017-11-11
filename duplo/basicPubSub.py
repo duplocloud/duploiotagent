@@ -86,8 +86,8 @@ def pubSubGetClient():
     lAWSIoTMQTTClient.configureAutoReconnectBackoffTime(1, 32, 20)
     lAWSIoTMQTTClient.configureOfflinePublishQueueing(-1)  # Infinite offline Publish queueing
     lAWSIoTMQTTClient.configureDrainingFrequency(2)  # Draining: 2 Hz
-    lAWSIoTMQTTClient.configureConnectDisconnectTimeout(10)  # 10 sec
-    lAWSIoTMQTTClient.configureMQTTOperationTimeout(5)  # 5 sec
+    lAWSIoTMQTTClient.configureConnectDisconnectTimeout(30)  # 10 sec
+    lAWSIoTMQTTClient.configureMQTTOperationTimeout(30)  # 5 sec
     return lAWSIoTMQTTClient, topic, deviceid
 
 def startPubSub(aInAWSIoTMQTTClient, aInTopic):
@@ -99,6 +99,6 @@ def startPubSub(aInAWSIoTMQTTClient, aInTopic):
     # Publish to the same topic in a loop forever
     loopCount = 0
     while True:
-        aInAWSIoTMQTTClient.publish(aInTopic, "New Message " + str(loopCount), 1)
+        aInAWSIoTMQTTClient.publish(aInTopic, "New Message ", 1)
         loopCount += 1
-        time.sleep(1)
+        time.sleep(5)

@@ -9,6 +9,7 @@ import json
 import requests
 import socket
 import boto3
+import datetime
 from threading import Thread
 import basicPubSub
 from dockerutils import processGoalState
@@ -27,6 +28,7 @@ def invokePubSub():
 			exc_type, exc_value, exc_traceback = sys.exc_info()
 			el = repr(traceback.format_exception(exc_type, exc_value, exc_traceback))
 			print('pubsub threw an error {}'.format(el))
+	    time.sleep(10)	
 
 def getDeviceShadow():
 	global g_deviceid
@@ -49,7 +51,9 @@ def updateDeviceShadow():
 		lData = getContainersJson()
 		lJsonObj = json.loads(lData)
 		lHostName = os.getenv('HOST_HOSTNAME', socket.gethostname())
-		status = '{ "Containers":' +  json.dumps(lJsonObj) + ' }'
+		d = datetime.datetime.utcnow()
+
+		status = '{ "ReportedAt":"' + d.isoformat() + '", "Containers":' +  json.dumps(lJsonObj) + ' }'
 		status = '{ "reported":' +  status + ' }'
 		status = '{ "state":' +  status + ' }'
 		lJsonObj = json.loads(status)
